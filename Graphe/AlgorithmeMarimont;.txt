@@ -1,0 +1,139 @@
+program AlgorithmeMarimont;
+
+ const MAX_SOMMETS=30;
+
+ type
+   Graphe=record
+      sommets: array[1..MAX_SOMMETS] of Integer;
+      matriceAdj: array[1..MAX_SOMMETS,1..MAX_SOMMETS] of Integer;
+    end;
+  type
+    Ensemble= record
+      tableau: array[1..MAX_SOMMETS] of Integer;
+   end;
+  type
+    TSousGraphe=record
+       sommets:array[1..MAX_SOMMETS] of Integer;
+  end;
+
+  var
+    sousGrapheDeSortie:TSousGraphe;
+    G,H:Graphe;
+    V,E,S:Ensemble;
+    HV:Boolean;
+    i:Integer;
+
+ procedure InitialiserGraphe(var H:Graphe; n:Integer);
+   var
+      value,i,j: Integer;
+   begin
+      for i:=1 to n do
+        begin
+          write('entrez la valeur numero: ');
+          readLn(value);
+          H.sommets[i]:=value;
+         end;
+
+      for i:=1 to n do
+        for j:=1 to n do
+          H.matriceAdj[i,j]:=1;
+
+   end;
+
+ procedure AjoutArret(var H:Graphe; src,dest:Integer);
+    var
+      taille:Integer;
+    begin
+       taille:= High(H.sommets) - Low(H.sommets) +1;
+       if (src>=1) and (src<=taille) and (dest>=1) and (dest<=taille) then
+         H.matriceAdj[src,dest]:=1;
+    end;
+
+ procedure formerEnsemble(var E:Ensemble; n:Integer);
+     var
+       valeur,i:Integer;
+     begin
+         for i:=1 to n do
+           begin
+             write('Entrez la valeur: ');
+             readLn(valeur);
+             E.tableau[i]:= valeur;
+           end;
+     end;
+ function EstComplet(G:Graphe; s1,s2,s3:Integer):Boolean;
+     begin
+        EstComplet:=
+          (G.matriceAdj[s1,s2]=1) and (G.matriceAdj[s2,s1]=1) and
+          (G.matriceAdj[s1,s3]=1) and (G.matriceAdj[s3,s1]=1) and
+          (G.matriceAdj[s2,s3]=1) and (G.matriceAdj[s3,s2]=1);
+     end;
+ procedure videH(var H:Graphe);
+     var
+       i,j,k:Integer;
+
+     begin
+       HV:=false;
+       for i:=1 to High(H.sommets)- Low(H.sommets)+1 - 2 do
+         for j:=i+1 to High(H.sommets)-Low(H.sommets)+1 -1 do
+           for k:=j+1 to High(H.sommets)-Low(H.sommets)+1 do
+             if EstComplet(H,i,j,k) then
+                begin
+                   sousGrapheDeSortie.sommets[1]:=i;
+                   sousGrapheDeSortie.sommets[2]:=j;
+                   sousGrapheDeSortie.sommets[3]:=k;
+                   writeLn('Sous-graphe trouv : ',i, ', ',j, ', ',k);
+                   HV:=True;
+                end;
+       if not HV then
+          write('Aucun sous-graphe complet de taille 3 trouv . ');
+     end;
+ procedure pointEntree(var H:Graphe);
+     var
+       i:Integer;
+     begin
+        for i:=1 to High(H.sommets)-Low(H.sommets)+1 do
+           write('Sommets: ',H.sommets[i]);
+     end;
+
+ procedure pointSortie(var H:Graphe);
+    var
+      i:Integer;
+    begin
+       for i:=1 to High(H.sommets)-Low(H.sommets)+1 do
+          write('Sommets des sous graphes de sortis: ',sousGrapheDeSortie.sommets[i]);
+    end;
+
+ function videE(var E:Ensemble):Boolean;
+    var
+      i:Integer;
+    begin
+      for i:=1 to MAX_SOMMETS do
+        if E.tableau[i] <> 0 then
+          begin
+             videE:=False;
+             Exit;
+          end;
+      videE:=True;
+    end;
+ procedure union(var E:Ensemble;var V:Ensemble);
+    begin
+      if (High(E.tableau)-Low(E.tableau)+1)=(High(V.tableau)-Low(V.tableau)+1) then
+        for i:=1 to High(E.tableau)-Low(E.tableau)+1 do
+         E.tableau[High(E.tableau)-Low(E.tableau)+1+i]:=V.tableau[i];
+    end;
+ begin
+
+    initialiserGraphe(H,3);
+    videH(H);
+    for i:=1 to High(H.sommets)-Low(H.sommets)+1 do
+      AjoutArret(H,i,i+1);
+
+    repeat
+      pointEntree(H);
+      pointSortie(H);
+      union(E,V);
+      for i:=1 to High(sousGrapheDeSortie.sommets)-Low(sousGrapheDeSortie.sommets)+1 do
+        write('Sous graphe: ',sousGrapheDeSortie.sommets[i]);
+      videH(H);
+    until videE(E) or HV;
+ end.
